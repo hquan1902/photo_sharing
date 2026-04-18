@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { AppBar, Toolbar, Typography } from "@mui/material";
 import { matchPath, useLocation } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
-import models from "../../modelData/models";
 
 import "./styles.css";
 
@@ -29,21 +28,16 @@ function TopBar() {
 
     const fetchData = async () => {
       try {
-        const result = await fetchModel(`/user/${userId}`);
+        const result = await fetchModel(`/api/user/${userId}`);
         if (!ignore) {
           setCurrentUser(result);
           setError(null);
         }
-      } catch (err) {
+      }
+      catch (err) {
         if (!ignore) {
-          const fallbackUser = models.userModel(userId);
-          if (fallbackUser) {
-            setCurrentUser(fallbackUser);
-            setError(null);
-          } else {
-            setCurrentUser(null);
-            setError("Unable to load user context");
-          }
+          setCurrentUser(null);
+          setError("Unable to load user context");
         }
       }
     };
@@ -59,11 +53,7 @@ function TopBar() {
     if (!userId) {
       return "Users";
     }
-    const fullName = currentUser
-      ? `${currentUser.first_name} ${currentUser.last_name}`
-      : error
-      ? "User"
-      : "Loading...";
+    const fullName = currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : error ? "User" : "Loading...";
 
     if (location.pathname.startsWith("/photos")) {
       return `Photos of ${fullName}`;

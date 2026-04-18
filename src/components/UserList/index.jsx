@@ -7,12 +7,10 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material";
-
-import "./styles.css";
 import { Link } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
-import models from "../../modelData/models";
 
+import "./styles.css";
 
 function UserList () {
     const [users, setUsers] = useState([]);
@@ -24,25 +22,21 @@ function UserList () {
 
       const fetchData = async () => {
         try {
-          const result = await fetchModel("/user/list");
+          const result = await fetchModel("/api/user/list");
           if (!ignore) {
             setUsers(result);
             setLoading(false);
+            setError(null);
           }
-        } catch (err) {
-          if (!ignore) {
-            const fallbackUsers = models.userListModel();
-            if (fallbackUsers && fallbackUsers.length > 0) {
-              setUsers(fallbackUsers);
-              setError(null);
-            } else {
-              setError("An error occurred while fetching users.");
-            }
+        } 
+        catch (err) {
+          if(!ignore){
+            console.error("[UserList] Failed to fetch users:", err)
+            setError("An error occurred while fetching users.");
             setLoading(false);
           }
         }
       };
-
       fetchData();
 
       return () => {

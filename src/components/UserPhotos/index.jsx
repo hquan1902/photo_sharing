@@ -9,7 +9,6 @@ import {
 } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
-import models from "../../modelData/models";
 
 import "./styles.css";
 import kenobi1 from "../../images/kenobi1.jpg";
@@ -67,24 +66,17 @@ function UserPhotos() {
 
     const fetchData = async () => {
       try {
-        const result = await fetchModel(`/photosOfUser/${userId}`);
+        const result = await fetchModel(`/api/photosOfUser/${userId}`);
         if (!ignore) {
           setPhotos(result);
           setLoading(false);
         }
-      } catch (err) {
-        if (!ignore) {
-          const fallbackPhotos = models.photoOfUserModel(userId);
-          if (fallbackPhotos) {
-            setPhotos(fallbackPhotos);
-            setError(null);
-          } else {
-            setError("An error occurred while fetching photos.");
-          }
-          setLoading(false);
-        }
+      } 
+      catch (err) {
+        setError("An error occurred while fetching photos.");
+        setLoading(false);
       }
-    };
+      };
 
     fetchData();
 

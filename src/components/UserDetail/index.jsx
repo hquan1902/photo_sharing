@@ -2,13 +2,10 @@ import React, { useEffect, useState } from "react";
 import { Button, Stack, Typography } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
 import fetchModel from "../../lib/fetchModelData";
-import models from "../../modelData/models";
 
 import "./styles.css";
 
-/**
- * Define UserDetail, a React component of Project 4.
- */
+
 function UserDetail() {
   const { userId } = useParams();
   const [user, setUser] = useState(null);
@@ -20,30 +17,19 @@ function UserDetail() {
 
     const fetchData = async () => {
       try {
-        const result = await fetchModel(`/user/${userId}`);
+        const result = await fetchModel(`/api/user/${userId}`);
         if (!ignore) {
           setUser(result);
           setLoading(false);
         }
-      } catch (err) {
-        if (!ignore) {
-          const fallbackUser = models.userModel(userId);
-          if (fallbackUser) {
-            setUser(fallbackUser);
-            setError(null);
-          } else {
+      } 
+      catch (err) {
             setError("An error occurred while fetching user details.");
-          }
           setLoading(false);
-        }
       }
     };
 
     fetchData();
-
-    return () => {
-      ignore = true;
-    };
   }, [userId]);
 
   if (loading) {
