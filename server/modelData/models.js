@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * Model data for Project 4 - the photo sharing site.
  * This module returns an object called models with the following
