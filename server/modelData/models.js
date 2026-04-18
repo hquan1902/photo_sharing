@@ -380,4 +380,4 @@ const models = {
   schemaInfo: schemaModel,
 };
 
-export default models;
+module.exports = models;
