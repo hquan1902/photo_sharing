@@ -8,7 +8,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
-import fetchModel from "../../lib/fetchModelData";
+import { API_BASE_URL } from "../../lib/fetchModelData";
 
 import "./styles.css";
 import kenobi1 from "../../images/kenobi1.jpg";
@@ -65,18 +65,27 @@ function UserPhotos() {
     let ignore = false;
 
     const fetchData = async () => {
+      const token = localStorage.getItem("myToken");
       try {
-        const result = await fetchModel(`/api/photosOfUser/${userId}`);
+        const response = await fetch(`${API_BASE_URL}/api/photosOfUser/${userId}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const result = await response.json();
         if (!ignore) {
           setPhotos(result);
           setLoading(false);
         }
-      } 
+      }
       catch (err) {
         setError("An error occurred while fetching photos.");
         setLoading(false);
       }
-      };
+    };
 
     fetchData();
 
@@ -128,8 +137,8 @@ function UserPhotos() {
                 {photo.comments.map((comment) => (
                   <Stack key={comment._id} spacing={0.3}>
                     <Typography variant="body2">
-                      <Link to={`/users/${comment.user._id}`}>
-                        {comment.user.first_name} {comment.user.last_name}
+                      <Link to={`/users/${comment.user_id._id}`}>
+                        {comment.user_id.first_name} {comment.user_id.last_name}
                       </Link>
                       {": "}
                       {comment.comment}

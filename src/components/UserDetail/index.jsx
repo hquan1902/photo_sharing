@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Stack, Typography } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
-import fetchModel from "../../lib/fetchModelData";
+import { API_BASE_URL } from "../../lib/fetchModelData";
 
 import "./styles.css";
 
@@ -16,16 +16,25 @@ function UserDetail() {
     let ignore = false;
 
     const fetchData = async () => {
+      const token = localStorage.getItem("myToken");
       try {
-        const result = await fetchModel(`/api/user/${userId}`);
+        const response = await fetch(`${API_BASE_URL}/api/user/${userId}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const result = await response.json();
         if (!ignore) {
           setUser(result);
           setLoading(false);
         }
-      } 
+      }
       catch (err) {
-            setError("An error occurred while fetching user details.");
-          setLoading(false);
+        setError("An error occurred while fetching user details.");
+        setLoading(false);
       }
     };
 
