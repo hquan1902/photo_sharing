@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const app = express();
 const cors = require("cors");
+const path = require("path");
 const dbConnect = require("./db/dbConnect");
 const UserRouter = require("./routes/UserRouter");
 const PhotoRouter = require("./routes/PhotoRouter");
@@ -15,6 +16,7 @@ jwt_secret = process.env.JWT_SECRET;
 
 app.use(cors());
 app.use(express.json());
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // app.use("/api/user", UserRouter);
 // app.use("/api/photo", PhotoRouter);
@@ -92,6 +94,35 @@ app.get("/api/photosOfUser/:id", verifyToken, async (req, res) => {
     res.status(400).json({ message: "Invalid User ID format" });
   }
 });
+
+app.post("/api/commentsOfPhoto/:photoId", verifyToken, async (req, res) => {
+  try {
+    const photoId = req.params.photoId;
+    const { comment } = req.body;
+    if (!comment || comment.trim() === "") {
+      return res.status(400).json({ message: "Bình luận không được để trống!" });
+    }
+
+    const photo = await Photo.findOne({ _id: photoId });
+    if (!photo) {
+      return res.status(404).json({ message: "Không tìm thấy bài viết!" });
+    }
+
+    const newComment = {
+      comment: comment,
+      user_id: req.user.id,
+      date_time: new Date()
+    };
+
+    photo.comments.push(newComment);
+    await photo.save();
+    res.status(200).json({ message: "Đã thêm bình luận!", photo: photo });
+  }
+  catch (err) {
+    console.error("Lỗi khi thêm bình luận:", err);
+    res.status(500).json({ message: "Lỗi server!", error: err.message });
+  }
+})
 
 
 app.post("/api/user", async (req, res) => {

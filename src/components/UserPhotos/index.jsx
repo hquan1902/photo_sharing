@@ -6,38 +6,13 @@ import {
   Divider,
   Stack,
   Typography,
+  TextField,
+  Button
 } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
 import { API_BASE_URL } from "../../lib/fetchModelData";
 
 import "./styles.css";
-import kenobi1 from "../../images/kenobi1.jpg";
-import kenobi2 from "../../images/kenobi2.jpg";
-import kenobi3 from "../../images/kenobi3.jpg";
-import kenobi4 from "../../images/kenobi4.jpg";
-import ludgate1 from "../../images/ludgate1.jpg";
-import malcolm1 from "../../images/malcolm1.jpg";
-import malcolm2 from "../../images/malcolm2.jpg";
-import ouster from "../../images/ouster.jpg";
-import ripley1 from "../../images/ripley1.jpg";
-import ripley2 from "../../images/ripley2.jpg";
-import took1 from "../../images/took1.jpg";
-import took2 from "../../images/took2.jpg";
-
-const photoMap = {
-  "kenobi1.jpg": kenobi1,
-  "kenobi2.jpg": kenobi2,
-  "kenobi3.jpg": kenobi3,
-  "kenobi4.jpg": kenobi4,
-  "ludgate1.jpg": ludgate1,
-  "malcolm1.jpg": malcolm1,
-  "malcolm2.jpg": malcolm2,
-  "ouster.jpg": ouster,
-  "ripley1.jpg": ripley1,
-  "ripley2.jpg": ripley2,
-  "took1.jpg": took1,
-  "took2.jpg": took2,
-};
 
 function formatDateTime(dateTimeString) {
   const date = new Date(dateTimeString);
@@ -49,7 +24,7 @@ function formatDateTime(dateTimeString) {
 }
 
 function getPhotoSrc(fileName) {
-  return photoMap[fileName] || "";
+  return `${API_BASE_URL}/images/${fileName}`;
 }
 
 /**
@@ -60,6 +35,7 @@ function UserPhotos() {
   const [photos, setPhotos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [newComments, setNewComments] = useState({});
 
   useEffect(() => {
     let ignore = false;
@@ -93,6 +69,38 @@ function UserPhotos() {
       ignore = true;
     };
   }, [userId]);
+
+  const handleCommentChange = (photoId, text) => {
+    setNewComments({ ...newComments, [photoId]: text });
+  };
+
+  const handleAddComment = async (photoId) => {
+    const text = newComments[photoId];
+    if (!text || text.trim() === "") return;
+
+    const token = localStorage.getItem("myToken");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/commentsOfPhoto/${photoId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ comment: text })
+      });
+      if (response.ok) {
+        setNewComments({ ...newComments, [photoId]: "" });
+        const response2 = await fetch(`${API_BASE_URL}/api/photosOfUser/${userId}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const result = await response2.json();
+        setPhotos(result);
+      }
+    }
+    catch (err) {
+      console.error("Lỗi khi thêm comment:", err);
+    }
+  };
 
   const sortedPhotos = useMemo(
     () =>
@@ -153,6 +161,11 @@ function UserPhotos() {
             ) : (
               <Typography variant="body2">No comments yet.</Typography>
             )}
+            <Divider sx={{ my: 1.5 }} />
+            <Stack direction="row" spacing={1}>
+              <TextField size="small" fullWidth placeholder="Write a comment..." variant="outlined" value={newComments[photo._id] || ""} onChange={(e) => handleCommentChange(photo._id, e.target.value)} />
+              <Button variant="contained" onClick={() => handleAddComment(photo._id)} disabled={!newComments[photo._id] || newComments[photo._id].trim() === ""}>Đăng</Button>
+            </Stack>
           </CardContent>
         </Card>
       ))}
